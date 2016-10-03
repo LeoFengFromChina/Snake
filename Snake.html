@@ -1,0 +1,316 @@
+<html>
+<head>
+
+<style>
+canvas{	
+	border:1px solid #000000;
+}
+.div_b{
+	width:400px; margin:0 auto;
+}
+</style>
+
+</head>
+<body onkeyup="showKeyCode(event)">
+	<div class="div_b"><button id="start" onclick="start()">Start</button><button id="start" onclick="stop()">Stop</button></div>
+	<div class="div_b"><canvas id="ctx" width="400" height="400">my grap</canvas></div>
+	<div class="div_b">Scors:<span id="score">1</span></div>
+</body>
+
+<script>
+	var mapWidth;
+	var mapHeight;
+	var cellHeight;
+	var cellWidth;	
+	var rowCount=20;
+	var columnCount=20;
+	var g;
+	var intervalID;
+	var intervalID_2;
+	var keyCode=39;
+	var interval=400;
+	var canvas;
+	var eatX;
+	var eatY;
+	var blockCount=1;
+	var curX=0;
+	var curY=0;
+	var curHeigth;
+	var PoinArray=[];
+	var op="Right";//Left,Up,Down
+	function drawMap(){
+		canvas=document.getElementById("ctx");
+		g=canvas.getContext("2d");
+		g.fillStyle="#C5C1AA";
+		canvas.width=canvas.width;
+		mapWidth=canvas.width;
+		mapHeight=canvas.height;
+		if(g==null){
+			alert("g is null");
+		}
+		else
+		{
+			cellHeight=canvas.clientHeight/rowCount;
+			curHeigth=cellHeight;
+			cellWidth=canvas.clientWidth/columnCount;
+			curWidth=cellWidth;
+		}
+		//随机产生被吃的矩形
+		GenerateRandonRect();
+		drawRect();
+		intervalID=setInterval('startDropMap()',interval);
+	}
+	var preGen=new Object();
+	function GenerateRandonRect(){
+		
+		var newGen=getGen();
+		for(var i=0;i<PoinArray.length;i++){
+			if(newGen.x==PoinArray[i].x && newGen.y==PoinArray[i].y){
+				//生成的点在队列内，从新生产
+				GenerateRandonRect();
+				return;
+			}
+		}
+		eatX=newGen.x;
+		eatY=newGen.y;
+		g.fillStyle="#0000ff";
+		g.fillRect(eatX,eatY,cellWidth,cellHeight);
+		preGen=newGen;
+		g.fillStyle="#C5C1AA";
+	}
+	function getGen(){
+		var rowR=Math.floor(Math.random()*(columnCount-1)+1);
+		var rowC=Math.floor(Math.random()*(rowCount-1)+1);
+		var obj=new Object();
+		obj.x=rowC*cellWidth;
+		obj.y=rowR*cellHeight;
+		return obj;
+	}
+	function stop(){
+		window.clearInterval(intervalID);
+	}
+	function start(){
+		window.clearInterval(intervalID);
+		curX=0;curY=0;blockCount=1;interval=400;keyCode=39;PoinArray=[];op="Right";
+		drawMap();
+	}
+	function drawText(text,font,x,y){
+		g.font=font;//"30px Verdana";
+		g.strokeText(text,x,y);
+	}
+	function gameOver(){
+		window.clearInterval(intervalID);
+		drawText("Game Over!","30px Verdana",100,200);
+		drawText("Scors:"+blockCount,"16px Verdana",160,240);
+	}
+	function isInSnakeBody(opcode){
+		if(blockCount<4) return false;
+		for(var i=0;i<PoinArray.length;i++){
+			if(opcode=="Right"){
+				if(curX+cellWidth==PoinArray[i].x && curY==PoinArray[i].y){
+					return true;
+				}
+			}
+			else if(opcode=="Left"){
+				if(curX-cellWidth==PoinArray[i].x && curY==PoinArray[i].y){
+					return true;
+				}
+			}
+			else if(opcode=="Up"){
+				if(curY-cellHeight==PoinArray[i].y && curX==PoinArray[i].x){
+					return true;
+				}
+			}
+			else if(opcode=="Down"){
+				if(curY+cellHeight==PoinArray[i].y && curX==PoinArray[i].x){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	function startDropMap(){
+		if(op=="Right"){				
+			if((curX+cellWidth)>mapWidth || isInSnakeBody(op)){
+				gameOver();
+				return;
+			}
+			curX+=cellWidth;
+		}
+		else if(op=="Left"){
+			if(curX-cellWidth<0 || isInSnakeBody(op)){
+				gameOver();
+				return;
+			}
+			curX-=cellWidth;
+		}
+		else if(op=="Up"){
+			if(curY-cellHeight<0 || isInSnakeBody(op)){
+				gameOver();
+				return;
+			}
+			curY-=cellHeight;
+		}
+		else if(op=="Down"){
+			if((curY+cellHeight)>mapHeight || isInSnakeBody(op)){
+				gameOver();
+				return;
+			}
+			curY+=cellHeight;
+		}
+		drawRect();
+	}
+	var nearFood="";
+	function drawRect(){
+		if(g==null) return;
+		
+		g.fillRect(curX,curY,cellWidth,cellHeight);
+		PushNewRectInArray();
+		if(PoinArray.length>blockCount){
+			
+			var lastObj=PoinArray.shift();			
+			if(lastObj.x==preGen.x && lastObj.y==preGen.y){
+				console.log("Fuck!");
+			}
+			else
+				g.clearRect(lastObj.x,lastObj.y,cellWidth,cellHeight);
+		}
+		nearFood="";
+		if(curX==eatX-cellWidth && curY==eatY){
+			nearFood="Left";
+			console.log("on eat Left");
+		}
+		else if(curX==eatX+cellWidth && curY==eatY){
+			nearFood="Right";
+			console.log("on eat Right");
+		}
+		else if(curY==eatY-cellHeight && curX==eatX){
+			nearFood="Up";
+			console.log("on eat Up");
+		}
+		else if(curY==eatY+cellHeight && curX==eatX){
+			nearFood="Down";
+			console.log("on eat Down");
+		}
+		//判断是否已经触碰到食物
+		if(keyCode=="39"){
+			if(curX+cellWidth==eatX && curY==eatY){
+				onKeyCode39();
+				return;
+			}
+		}
+		else if(keyCode=="37"){
+			if(eatX-cellWidth==curX && curY==eatY){
+				onKeyCode37();
+				return;
+			}
+		}
+		else if(keyCode=="40"){
+			if(curY+cellHeight==eatY && curX==eatX){
+				onKeyCode40();
+				return;
+			}
+		}
+		else if(keyCode=="38"){
+			if(curY-cellHeight==eatY && curX==eatX){
+				onKeyCode38();
+				return;
+			}
+		}
+	}
+	function onKeyCode37(){
+		blockCountRaiseOne();
+				curX-=cellWidth;
+				PushNewRectInArray();
+				console.log("37 Generate:"+blockCount);
+				GenerateRandonRect();	
+	}
+	function onKeyCode38(){
+		
+				blockCountRaiseOne();
+				curY-=cellHeight;
+				PushNewRectInArray();
+				console.log("38 Generate:"+blockCount);
+				GenerateRandonRect();
+	}
+	function onKeyCode39(){
+
+				blockCountRaiseOne();
+				curX+=cellWidth;
+				PushNewRectInArray();				
+				console.log("39 Generate:"+blockCount);
+				GenerateRandonRect();	
+	}
+	function onKeyCode40(){
+			
+				blockCountRaiseOne();
+				curY+=cellHeight;
+				PushNewRectInArray();
+				console.log("40 Generate:"+blockCount);
+				GenerateRandonRect();	
+	}
+	
+	function blockCountRaiseOne(){		
+		blockCount+=1;
+		document.getElementById("score").innerHTML=blockCount;
+		if(blockCount%5==0){
+			window.clearInterval(intervalID);
+			if(interval>200)
+				interval-=50;
+			else
+				interval-=10;
+			intervalID=setInterval('startDropMap()',interval);
+		}
+	}
+	
+	function PushNewRectInArray(){
+		var obj=new Object();
+		obj.x=curX;
+		obj.y=curY;
+		PoinArray.push(obj);
+	}
+
+	function showKeyCode(event){
+		
+		if(keyCode==event.keyCode)
+			return;
+		else if((keyCode=="37" && event.keyCode=="39") || (keyCode=="39" && event.keyCode=="37")){
+			//不能直接走反方向
+			return;		
+		}
+		else if((keyCode=="38" && event.keyCode=="40") || (keyCode=="40" && event.keyCode=="38")){
+			//不能直接走反方向
+			return;		
+		}
+		keyCode=event.keyCode;
+		if(event.keyCode=="37"){
+			if(nearFood=="Right"){		
+				onKeyCode37();			
+			}
+			op="Left";
+		}
+		else if(event.keyCode=="38"){
+			if(nearFood=="Down"){	
+				onKeyCode38();			
+			}
+			
+			op="Up";startDropMap();
+		}
+		else if(event.keyCode=="39"){
+			if(nearFood=="Left"){
+				onKeyCode39();onKeyCode39();				
+			}			
+			op="Right";
+		}
+		else if(event.keyCode=="40"){
+			if(nearFood=="Up"){			
+				onKeyCode40();			
+			}
+			op="Down";
+		}
+	}
+	window.onload=function(){	
+		drawMap();		
+	}
+	</script>
+</html>
