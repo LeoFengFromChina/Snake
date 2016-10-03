@@ -38,6 +38,8 @@ canvas{
 	var curHeigth;
 	var PoinArray=[];
 	var op="Right";//Left,Up,Down
+	var nearFood="";
+	var preGen=new Object();
 	function drawMap(){
 		canvas=document.getElementById("ctx");
 		g=canvas.getContext("2d");
@@ -47,6 +49,7 @@ canvas{
 		mapHeight=canvas.height;
 		if(g==null){
 			alert("g is null");
+			return;
 		}
 		else
 		{
@@ -60,7 +63,6 @@ canvas{
 		drawRect();
 		intervalID=setInterval('startDropMap()',interval);
 	}
-	var preGen=new Object();
 	function GenerateRandonRect(){
 		
 		var newGen=getGen();
@@ -112,6 +114,7 @@ canvas{
 		window.clearInterval(intervalID);
 		drawText("Game Over!","30px Verdana",100,200);
 		drawText("Scors:"+blockCount,"16px Verdana",160,240);
+		drawText("Developer: LeoFeng","12px Verdana",130,280);
 	}
 	function isInSnakeBody(opcode){
 		if(blockCount<4) return false;
@@ -170,7 +173,6 @@ canvas{
 		}
 		drawRect();
 	}
-	var nearFood="";
 	function drawRect(){
 		if(g==null) return;
 		
