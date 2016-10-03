@@ -32,7 +32,7 @@ canvas{
 	var canvas;
 	var eatX;
 	var eatY;
-	var blockCount=1;
+	var blockCount=3;
 	var curX=0;
 	var curY=0;
 	var curHeigth;
@@ -103,7 +103,7 @@ canvas{
 	}
 	function start(){
 		window.clearInterval(intervalID);
-		curX=0;curY=0;blockCount=1;interval=400;keyCode=39;PoinArray=[];op="Right";
+		curX=0;curY=0;blockCount=3;interval=400;keyCode=39;PoinArray=[];op="Right";
 		drawMap();
 	}
 	function drawText(text,font,x,y){
