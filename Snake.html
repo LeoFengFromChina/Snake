@@ -64,8 +64,18 @@ canvas{
 	function GenerateRandonRect(){
 		
 		var newGen=getGen();
+		if(PoinArray.length>1){
+			
+			var headX=PoinArray[PoinArray.length-1].x;
+			var headY=PoinArray[PoinArray.length-1].y;
+			if((headX-cellWidth==newGen.x && headY==newGen.y)||(headX+cellWidth==newGen.x && headY==newGen.y)||(headY-cellHeight==newGen.y && headX==newGen.x)||(headY+cellHeight==newGen.y && headX==newGen.x)){
+				//生成的点在队列内，从新生产
+				GenerateRandonRect();
+				return;
+			}
+		}
 		for(var i=0;i<PoinArray.length;i++){
-			if(newGen.x==PoinArray[i].x && newGen.y==PoinArray[i].y){
+			if((newGen.x==PoinArray[i].x && newGen.y==PoinArray[i].y)){
 				//生成的点在队列内，从新生产
 				GenerateRandonRect();
 				return;
@@ -200,7 +210,7 @@ canvas{
 			}
 		}
 		else if(keyCode=="37"){
-			if(eatX-cellWidth==curX && curY==eatY){
+			if(curX-cellWidth==eatX && curY==eatY){
 				onKeyCode37();
 				return;
 			}
@@ -219,14 +229,13 @@ canvas{
 		}
 	}
 	function onKeyCode37(){
-		blockCountRaiseOne();
+				blockCountRaiseOne();
 				curX-=cellWidth;
 				PushNewRectInArray();
 				console.log("37 Generate:"+blockCount);
 				GenerateRandonRect();	
 	}
-	function onKeyCode38(){
-		
+	function onKeyCode38(){		
 				blockCountRaiseOne();
 				curY-=cellHeight;
 				PushNewRectInArray();
@@ -234,7 +243,6 @@ canvas{
 				GenerateRandonRect();
 	}
 	function onKeyCode39(){
-
 				blockCountRaiseOne();
 				curX+=cellWidth;
 				PushNewRectInArray();				
@@ -298,7 +306,7 @@ canvas{
 		}
 		else if(event.keyCode=="39"){
 			if(nearFood=="Left"){
-				onKeyCode39();onKeyCode39();				
+				onKeyCode39();				
 			}			
 			op="Right";
 		}
